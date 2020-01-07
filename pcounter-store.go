@@ -89,7 +89,7 @@ func supplyPCounterCallback(clt *sxutil.SXServiceClient, sp *api.Supply) {
     err := proto.Unmarshal(sp.Cdata.Entity, pc)
 	if err == nil{ // get Pcounter
 		ts0 := ptypes.TimestampString(pc.Ts)
-		ld := fmt.Sprintf("%s,%s,%s,%s",ts0,pc.Hostname,pc.Mac,pc.Ip,pc.IpVpn)
+		ld := fmt.Sprintf("%s,%s,%s,%s,%s",ts0,pc.Hostname,pc.Mac,pc.Ip,pc.IpVpn)
 		ds.store(ld)
 		for _, ev := range pc.Data {
 			ts := ptypes.TimestampString(ev.Ts)
