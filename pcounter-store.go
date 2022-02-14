@@ -39,7 +39,6 @@ var (
 func init() {
 	flag.Parse()
 	if ((*dir)[0] == '/') {
-		log.Printf("Saving data to: " + *dir)
 		dataDir = *dir
 	} else {
 		var err error
