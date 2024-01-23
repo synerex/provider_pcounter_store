@@ -30,19 +30,25 @@ var (
 	local           = flag.String("local", "", "Local Synerex Server")
 	mu              sync.Mutex
 	version         = "0.01"
-	baseDir         = "store"
+	dir             = flag.String("dir", "store", "Directory of data storage")
 	dataDir         string
 	sxServerAddress string
 	ds              DataStore
 )
 
 func init() {
-	var err error
-	dataDir, err = os.Getwd()
-	if err != nil {
-		fmt.Printf("Can't obtain current wd")
+	flag.Parse()
+	if ((*dir)[0] == '/') {
+		dataDir = *dir
+	} else {
+		var err error
+		dataDir, err := os.Getwd()
+		if err != nil {
+			fmt.Printf("Can't obtain current wd")
+		}
+		dataDir = filepath.ToSlash(dataDir) + "/" + *dir
 	}
-	dataDir = filepath.ToSlash(dataDir) + "/" + baseDir
+	log.Printf("Saving data to: " + dataDir)
 	ds = &FileSystemDataStore{
 		storeDir: dataDir,
 	}
@@ -140,7 +146,6 @@ func subscribePCounterSupply(client *sxutil.SXServiceClient) {
 }
 
 func main() {
-	flag.Parse()
 	go sxutil.HandleSigInt()
 	sxutil.RegisterDeferFunction(sxutil.UnRegisterNode)
 	log.Printf("PCounter-Store(%s) built %s sha1 %s", sxutil.GitVer, sxutil.BuildTime, sxutil.Sha1Ver)
