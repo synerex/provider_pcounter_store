@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes"
 	pcounter "github.com/synerex/proto_pcounter"
 	api "github.com/synerex/synerex_api"
 	pbase "github.com/synerex/synerex_proto"
@@ -95,20 +94,22 @@ func supplyPCounterCallback(clt *sxutil.SXServiceClient, sp *api.Supply) {
 
 	err := proto.Unmarshal(sp.Cdata.Entity, pc)
 	if err == nil { // get Pcounter
-		ts0 := ptypes.TimestampString(pc.Ts)
+		ts0 := pc.Ts.AsTime().Format("2006-01-02T15:04:05.000Z")
 		ld := fmt.Sprintf("%s,%s,%s,%s,%s", ts0, pc.Hostname, pc.Mac, pc.Ip, pc.IpVpn)
 		ds.store(ld)
 		for _, ev := range pc.Data {
-			ts := ptypes.TimestampString(ev.Ts)
+			ts := ev.Ts.AsTime().Format("2006-01-02T15:04:05.000Z")
 			line := fmt.Sprintf("%s,%s,%d,%s,%s,", ts, pc.DeviceId, ev.Seq, ev.Typ, ev.Id)
 			switch ev.Typ {
 			case "counter":
-				line = line + fmt.Sprintf("%s,%d", ev.Dir, ev.Height)
+				line = line + fmt.Sprintf("%s,%.1f", ev.Dir, ev.Height)
 			case "fillLevel":
 				line = line + fmt.Sprintf("%d", ev.FillLevel)
 			case "dwellTime":
-				tsex := ptypes.TimestampString(ev.TsExit)
-				line = line + fmt.Sprintf("%f,%f,%s,%d,%d", ev.DwellTime, ev.ExpDwellTime, tsex, ev.ObjectId, ev.Height)
+				tsex := ev.TsExit.AsTime().Format("2006-01-02T15:04:05.000Z")
+				line = line + fmt.Sprintf("%f,%f,%s,%d,%.1f", ev.DwellTime, ev.ExpDwellTime, tsex, ev.ObjectId, ev.Height)
+			case "tracking":
+				line = line + fmt.Sprintf("%d,%.1f", ev.ObjectId, ev.Height)
 			}
 			ds.store(line)
 		}
