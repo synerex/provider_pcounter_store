@@ -41,7 +41,7 @@ func init() {
 		dataDir = *dir
 	} else {
 		var err error
-		dataDir, err := os.Getwd()
+		dataDir, err = os.Getwd()
 		if err != nil {
 			fmt.Printf("Can't obtain current wd")
 		}
